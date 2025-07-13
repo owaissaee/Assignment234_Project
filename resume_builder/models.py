@@ -19,7 +19,7 @@ class ResumeTemplate(models.Model):
     description = models.TextField(blank=True)
     format_type = models.CharField(max_length=20, choices=TEMPLATE_FORMATS)
     thumbnail = models.ImageField(upload_to='resume_templates/', blank=True)
-    config = models.JSONField(default=dict, blank=True)
+    config = models.JSONField()
     version = models.PositiveIntegerField(default=1)
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
