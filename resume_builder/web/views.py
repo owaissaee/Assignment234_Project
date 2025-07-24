@@ -6,6 +6,7 @@ from django.shortcuts import get_object_or_404
 from django.http import HttpResponse
 from django.template.loader import render_to_string
 from django.conf import settings
+
 import os
 from resume_builder.models import WorkExperience, Education, Project, Certification, Award, Language, Resume, TechnicalSkill
 from resume_builder.forms import WorkExperienceForm, EducationForm, ProjectForm, CertificationForm, AwardForm, LanguageForm, TechnicalSkillForm, ResumeTemplateSelectionForm, ResumeForm
@@ -69,14 +70,24 @@ class EducationCreateView(LoginRequiredMixin, CreateView):
     model = Education
     form_class = EducationForm
     template_name = 'resume_builder/education/education_form.html'
-    success_url = reverse_lazy('education_list')
 
     def form_valid(self, form):
-        resume = form.cleaned_data['resume']
+        resume = form.cleaned_data.get('resume')
         if resume.user != self.request.user:
             form.add_error('resume', 'You do not own this resume.')
             return self.form_invalid(form)
+        self.resume_pk = resume.pk
         return super().form_valid(form)
+
+    def get_success_url(self):
+        return reverse_lazy('resume_detail', kwargs={'pk': self.resume_pk})
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # Safely set resume_id in context from the form
+        context['resume_id'] = self.request.POST.get('resume') or None
+        return context
+
 
 class EducationUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = Education
